@@ -42,35 +42,19 @@ export const skills = [
 export const projects = [
 	{
 		id: 1,
-		title: 'Sistema POS Multi-Sucursal',
-		description: 'Plataforma de punto de venta completa con sincronización en tiempo real entre sucursales, gestión de inventario y reportes de ventas.',
-		technologies: ['React', 'Node.js', 'MongoDB', 'Socket.io', 'Electron'],
-		github: 'https://github.com',
-		demo: 'https://demo.com'
-	},
-	{
-		id: 2,
-		title: 'Dashboard Analytics',
-		description: 'Panel de control con visualización de datos en tiempo real, gráficos interactivos y generación automática de reportes exportables.',
-		technologies: ['React', 'D3.js', 'Node.js', 'PostgreSQL', 'Redis'],
-		github: 'https://github.com',
-		demo: 'https://demo.com'
-	},
-	{
-		id: 3,
-		title: 'API Gateway Microservices',
-		description: 'Arquitectura de microservicios con autenticación JWT, rate limiting, documentación Swagger y despliegue con Docker.',
-		technologies: ['NestJS', 'PostgreSQL', 'Docker', 'Redis', 'JWT'],
-		github: 'https://github.com',
+		title: 'WiseGold Capital - Plataforma de Gestión de Metales Preciosos',
+		description: 'Ecosistema fintech completo para inversión en oro físico. Sistema de gestión integral para asesores financieros con administración de portafolios, tracking en tiempo real de metales, custodia segura en bóvedas y reportería automática de transacciones y valorización.',
+		technologies: ['React', 'TypeScript', 'NestJS', 'PostgreSQL', 'Socket.io', 'Docker', 'Material-UI'],
+		github: '',
 		demo: null
 	},
 	{
-		id: 4,
-		title: 'E-Commerce Platform',
-		description: 'Tienda online completa con pasarela de pagos, gestión de productos, carrito de compras y panel administrativo.',
-		technologies: ['Next.js', 'Stripe', 'MongoDB', 'Tailwind CSS'],
-		github: 'https://github.com',
-		demo: 'https://demo.com'
+		id: 2,
+		title: 'AltivoPOS - Sistema de Punto de Venta Multiplataforma',
+		description: 'Software POS integral para restaurantes y comercios. Sistema completo de gestión de ventas, inventario, empleados y operaciones financieras. Incluye comandas de cocina, control de cajas, cierre diario automatizado, gestión de gastos y reportería en tiempo real. Disponible en PC, tablet y móvil.',
+		technologies: ['React', 'TypeScript', 'Electron', 'Node.js', 'MongoDB', 'Socket.io', 'Material-UI'],
+		github: '',
+		demo: null
 	}
 ];
 
@@ -80,7 +64,7 @@ export const aboutData = {
 	highlights: [
 		{
 			title: 'Arquitectura Frontend',
-			description: 'Interfaces modernas con React y Next.js, enfocadas en performance, accesibilidad y experiencia de usuario impecable.',
+			description: 'Interfaces modernas con React, TypeScript y Material-UI, enfocadas en performance, accesibilidad y experiencia de usuario impecable.',
 			icon: 'code'
 		},
 		{
