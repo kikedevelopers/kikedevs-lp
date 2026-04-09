@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { siteConfig, navItems } from '$lib/utils/constants';
 	import { onMount } from 'svelte';
 	
@@ -31,7 +32,7 @@
 		<div class="footer-content" class:visible={isVisible}>
 			<div class="footer-brand">
 				<a href="#home" class="footer-logo">
-					<img src="/logo.png" alt="Kike Dev's" class="footer-logo-img" />
+					<img src="{base}/logo.png" alt="Kike Dev's" class="footer-logo-img" />
 				</a>
 				<p class="footer-description">
 					Full Stack Developer especializado en crear soluciones digitales que impulsan tu negocio. 

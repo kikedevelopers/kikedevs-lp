@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import { navItems } from '$lib/utils/constants';
 	
 	let isMenuOpen = $state(false);
@@ -32,7 +33,7 @@
 <header class:scrolled={isScrolled} class:hidden={!isVisible}>
 	<div class="container">
 		<a href="#home" class="logo">
-			<img src="/logo.png" alt="Kike Dev's" class="logo-img" />
+			<img src="{base}/logo.png" alt="Kike Dev's" class="logo-img" />
 		</a>
 		
 		<button 
