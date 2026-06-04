@@ -70,8 +70,9 @@
 			
 			<div class="stats-row" class:visible={isVisible}>
 				{#each aboutData.stats as stat, index (stat.label)}
-					<div 
-						class="stat-item" 
+					<div
+						class="stat-item"
+						class:visible={isVisible}
 						style="transition-delay: {index * 100 + 600}ms"
 					>
 						<span class="stat-value">{stat.value}</span>
@@ -312,7 +313,12 @@
 		transform: translateY(20px);
 		transition: all 0.6s var(--transition-base);
 	}
-	
+
+	.stat-item.visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
 	.stat-value {
 		display: block;
 		font-size: 3rem;
@@ -337,11 +343,17 @@
 		}
 		
 		.stats-row {
-			gap: var(--spacing-lg);
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: var(--spacing-md);
+		}
+
+		.stat-item {
+			padding: var(--spacing-sm);
 		}
 		
 		.stat-value {
-			font-size: 2.5rem;
+			font-size: 2.25rem;
 		}
 	}
 </style>

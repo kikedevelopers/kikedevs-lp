@@ -26,11 +26,19 @@
 	function closeMenu() {
 		isMenuOpen = false;
 	}
+
+	$effect(() => {
+		if (typeof document === 'undefined') return;
+		document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
 </script>
 
 <svelte:window onscroll={handleScroll} />
 
-<header class:scrolled={isScrolled} class:hidden={!isVisible}>
+<header class:scrolled={isScrolled} class:hidden={!isVisible && !isMenuOpen}>
 	<div class="container">
 		<a href="#home" class="logo">
 			<img src="{base}/logo.png" alt="Kike Dev's" class="logo-img" />
@@ -72,11 +80,10 @@
 		right: 0;
 		z-index: 1000;
 		padding: var(--spacing-md) 0;
-		transition: all var(--transition-base);
+		transition: transform var(--transition-base), background var(--transition-base), padding var(--transition-base);
 		background: transparent;
-		transform: translateY(0);
 	}
-	
+
 	header.hidden {
 		transform: translateY(-100%);
 	}
@@ -235,28 +242,33 @@
 			position: fixed;
 			top: 0;
 			left: 0;
-			right: 0;
-			bottom: 0;
-			background: rgba(10, 10, 10, 0.98);
-			backdrop-filter: blur(20px);
+			width: 100%;
+			height: 100vh;
+			height: 100dvh;
+			background: var(--color-bg-primary);
+			background: linear-gradient(180deg, #0a0a0a 0%, #0d130f 100%);
 			flex-direction: column;
 			justify-content: center;
 			gap: var(--spacing-xl);
+			padding: var(--spacing-xl);
 			transform: translateX(100%);
 			transition: transform var(--transition-base);
 			z-index: 1000;
 		}
-		
+
 		nav.open {
 			transform: translateX(0);
 		}
-		
+
 		.nav-link {
 			font-size: 1.5rem;
+			color: var(--color-text-primary);
 		}
-		
+
 		.cta-button {
 			margin-top: var(--spacing-md);
+			font-size: 1.1rem;
+			padding: 1rem 2rem;
 		}
 	}
 </style>
