@@ -1,31 +1,20 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { navItems } from '$lib/utils/constants';
-	
+
 	let isMenuOpen = $state(false);
 	let isScrolled = $state(false);
 	let isVisible = $state(true);
 	let lastScrollY = $state(0);
-	
+
 	function handleScroll() {
-		const currentScrollY = window.scrollY;
-		isScrolled = currentScrollY > 50;
-		
-		if (currentScrollY > lastScrollY && currentScrollY > 100) {
-			isVisible = false;
-		} else {
-			isVisible = true;
-		}
-		lastScrollY = currentScrollY;
+		const y = window.scrollY;
+		isScrolled = y > 40;
+		isVisible = !(y > lastScrollY && y > 160);
+		lastScrollY = y;
 	}
-	
-	function toggleMenu() {
-		isMenuOpen = !isMenuOpen;
-	}
-	
-	function closeMenu() {
-		isMenuOpen = false;
-	}
+
+	const close = () => (isMenuOpen = false);
 
 	$effect(() => {
 		if (typeof document === 'undefined') return;
@@ -39,236 +28,205 @@
 <svelte:window onscroll={handleScroll} />
 
 <header class:scrolled={isScrolled} class:hidden={!isVisible && !isMenuOpen}>
-	<div class="container">
-		<a href="#home" class="logo">
-			<img src="{base}/logo.png" alt="Kike Dev's" class="logo-img" />
+	<div class="shell bar">
+		<a href="#home" class="logo" onclick={close} aria-label="Kike Dev's — inicio">
+			<img src="{base}/logo.png" alt="Kike Dev's" />
 		</a>
-		
-		<button 
-			class="menu-toggle" 
-			onclick={toggleMenu}
-			aria-label="Toggle menu"
+
+		<nav class:open={isMenuOpen}>
+			<ul>
+				{#each navItems as item, i (item.href)}
+					<li style="--i:{i}">
+						<a href={item.href} class="nav-link" onclick={close}>
+							<span class="nav-link__idx">0{i + 1}</span>
+							<span class="nav-link__label">{item.label}</span>
+						</a>
+					</li>
+				{/each}
+			</ul>
+			<a href="#contact" class="btn btn--primary nav-cta" onclick={close}>Hablemos</a>
+		</nav>
+
+		<button
+			class="burger"
+			class:open={isMenuOpen}
+			onclick={() => (isMenuOpen = !isMenuOpen)}
+			aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
 			aria-expanded={isMenuOpen}
 		>
-			<span class:open={isMenuOpen}></span>
-			<span class:open={isMenuOpen}></span>
-			<span class:open={isMenuOpen}></span>
+			<span></span>
+			<span></span>
 		</button>
-		
-		<nav class:open={isMenuOpen}>
-			{#each navItems as item (item.href)}
-				<a 
-					href={item.href} 
-					class="nav-link"
-					onclick={closeMenu}
-				>
-					{item.label}
-				</a>
-			{/each}
-			<a href="#contact" class="cta-button" onclick={closeMenu}>
-				<span class="btn-text">Hablemos</span>
-			</a>
-		</nav>
 	</div>
 </header>
 
 <style>
 	header {
 		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
+		inset: 0 0 auto 0;
 		z-index: 1000;
-		padding: var(--spacing-md) 0;
-		transition: transform var(--transition-base), background var(--transition-base), padding var(--transition-base);
-		background: transparent;
+		padding-block: 1.1rem;
+		transition:
+			transform 0.45s var(--ease-drawer),
+			background 0.4s ease,
+			padding 0.4s ease,
+			border-color 0.4s ease;
+		border-bottom: 1px solid transparent;
+	}
+	header.scrolled {
+		padding-block: 0.65rem;
+		background: rgba(5, 6, 7, 0.72);
+		backdrop-filter: blur(18px) saturate(160%);
+		border-bottom-color: var(--hairline);
+	}
+	header.hidden {
+		transform: translateY(-105%);
 	}
 
-	header.hidden {
-		transform: translateY(-100%);
-	}
-	
-	header.scrolled {
-		background: rgba(10, 10, 10, 0.85);
-		backdrop-filter: blur(20px) saturate(180%);
-		padding: var(--spacing-sm) 0;
-		border-bottom: 1px solid rgba(0, 255, 136, 0.1);
-	}
-	
-	.container {
-		max-width: 1200px;
-		margin: 0 auto;
-		padding: 0 var(--spacing-lg);
+	.bar {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 	}
-	
-	.logo {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		text-decoration: none;
-		transition: transform var(--transition-fast);
-	}
-	
-	.logo:hover {
-		transform: scale(1.02);
-	}
-	
-	.logo-img {
-		height: 50px;
+	.logo img {
+		height: 42px;
 		width: auto;
 		object-fit: contain;
-		transition: transform var(--transition-fast);
+		transition: transform 0.3s var(--ease-out);
 	}
-	
-	.logo:hover .logo-img {
-		transform: scale(1.05);
+	.logo:hover img {
+		transform: scale(1.04);
 	}
-	
-	.menu-toggle {
-		display: none;
-		flex-direction: column;
-		gap: 5px;
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0.5rem;
-		z-index: 1001;
-	}
-	
-	.menu-toggle span {
-		display: block;
-		width: 25px;
-		height: 2px;
-		background: linear-gradient(90deg, #00FF88, #00E676);
-		transition: all var(--transition-fast);
-	}
-	
-	.menu-toggle span.open:nth-child(1) {
-		transform: rotate(45deg) translate(5px, 5px);
-	}
-	
-	.menu-toggle span.open:nth-child(2) {
-		opacity: 0;
-	}
-	
-	.menu-toggle span.open:nth-child(3) {
-		transform: rotate(-45deg) translate(5px, -5px);
-	}
-	
+
 	nav {
 		display: flex;
 		align-items: center;
-		gap: var(--spacing-lg);
+		gap: 2.4rem;
 	}
-	
+	nav ul {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		list-style: none;
+	}
 	.nav-link {
-		color: var(--color-text-secondary);
-		text-decoration: none;
-		font-weight: 500;
-		font-size: 0.95rem;
-		transition: all var(--transition-fast);
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.4rem;
+		font-size: 0.82rem;
+		letter-spacing: 0.08em;
+		color: var(--ink-300);
 		position: relative;
-		padding: 0.5rem 0;
+		padding-block: 0.3rem;
+		transition: color 0.25s ease;
 	}
-	
-	.nav-link::before {
+	.nav-link__idx {
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		color: var(--emerald-600);
+		transition: color 0.25s ease;
+	}
+	.nav-link::after {
 		content: '';
 		position: absolute;
+		left: 0;
 		bottom: 0;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 0;
-		height: 2px;
-		background: var(--color-accent-primary);
-		box-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
-		transition: width var(--transition-fast);
+		height: 1px;
+		width: 100%;
+		background: var(--emerald-300);
+		box-shadow: 0 0 8px rgba(0, 255, 136, 0.7);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.3s var(--ease-out);
 	}
-	
 	.nav-link:hover {
-		color: var(--color-accent-primary);
-		text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+		color: var(--ink-100);
 	}
-	
-	.nav-link:hover::before {
-		width: 100%;
+	.nav-link:hover .nav-link__idx {
+		color: var(--emerald-300);
 	}
-	
-	.cta-button {
-		position: relative;
-		background: var(--color-accent-primary);
-		color: #0a0a0a;
-		padding: 0.75rem 1.5rem;
-		border-radius: var(--radius-md);
-		text-decoration: none;
-		font-weight: 700;
-		font-size: 0.95rem;
-		border: 2px solid var(--color-accent-primary);
-		transition: all var(--transition-fast);
-		overflow: hidden;
-		box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+	.nav-link:hover::after {
+		transform: scaleX(1);
 	}
-	
-	.cta-button::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: -100%;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-		transition: left 0.5s;
+	.nav-cta {
+		padding: 0.6rem 1.3rem;
+		font-size: 0.72rem;
 	}
-	
-	.cta-button:hover {
-		background: transparent;
-		color: var(--color-accent-primary);
-		box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-		transform: translateY(-2px);
+
+	.burger {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		gap: 6px;
+		width: 42px;
+		height: 42px;
+		background: none;
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-sm);
+		z-index: 1001;
 	}
-	
-	.cta-button:hover::before {
-		left: 100%;
+	.burger span {
+		display: block;
+		width: 18px;
+		height: 1.5px;
+		margin-inline: auto;
+		background: var(--emerald-200);
+		transition: transform 0.3s var(--ease-out), opacity 0.2s ease;
 	}
-	
-	@media (max-width: 768px) {
-		.menu-toggle {
+	.burger.open span:nth-child(1) {
+		transform: translateY(3.75px) rotate(45deg);
+	}
+	.burger.open span:nth-child(2) {
+		transform: translateY(-3.75px) rotate(-45deg);
+	}
+
+	@media (max-width: 860px) {
+		.burger {
 			display: flex;
 		}
-		
 		nav {
 			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100vh;
-			height: 100dvh;
-			background: var(--color-bg-primary);
-			background: linear-gradient(180deg, #0a0a0a 0%, #0d130f 100%);
+			inset: 0;
 			flex-direction: column;
 			justify-content: center;
-			gap: var(--spacing-xl);
-			padding: var(--spacing-xl);
+			gap: 2.5rem;
+			background:
+				radial-gradient(90% 60% at 70% 20%, #0d1a15, transparent 60%),
+				var(--onyx-900);
 			transform: translateX(100%);
-			transition: transform var(--transition-base);
-			z-index: 1000;
+			transition: transform 0.5s var(--ease-drawer);
 		}
-
 		nav.open {
 			transform: translateX(0);
 		}
-
-		.nav-link {
-			font-size: 1.5rem;
-			color: var(--color-text-primary);
+		nav ul {
+			flex-direction: column;
+			gap: 1.6rem;
 		}
-
-		.cta-button {
-			margin-top: var(--spacing-md);
-			font-size: 1.1rem;
-			padding: 1rem 2rem;
+		.nav-link {
+			font-size: 1.4rem;
+			font-family: var(--font-display);
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+		}
+		.nav-link__idx {
+			font-size: 0.8rem;
+		}
+		nav.open li {
+			opacity: 0;
+			transform: translateY(16px);
+			animation: menu-in 0.5s var(--ease-out) forwards;
+			animation-delay: calc(var(--i) * 60ms + 120ms);
+		}
+		.nav-cta {
+			padding: 0.9rem 2rem;
+			font-size: 0.82rem;
+		}
+	}
+	@keyframes menu-in {
+		to {
+			opacity: 1;
+			transform: none;
 		}
 	}
 </style>

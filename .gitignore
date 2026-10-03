@@ -21,3 +21,13 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Impeccable tooling (skill scaffolding, not project source)
+.agents/
+.impeccable/
+skills-lock.json
+.claude/skills/impeccable/
+.claude/agents/impeccable-*.md
+.github/skills/
+.github/agents/
+.github/hooks/

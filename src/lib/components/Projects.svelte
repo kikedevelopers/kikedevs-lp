@@ -1,70 +1,56 @@
 <script lang="ts">
 	import { projects } from '$lib/utils/constants';
-	import { onMount } from 'svelte';
-	
-	let isVisible = $state(false);
-	let sectionRef: HTMLElement;
-	
-	onMount(() => {
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					isVisible = true;
-				}
-			},
-			{ threshold: 0.1 }
-		);
-		
-		if (sectionRef) {
-			observer.observe(sectionRef);
-		}
-		
-		return () => observer.disconnect();
-	});
+	import { reveal, parallax } from '$lib/actions/motion';
+	import { splitProjectTitle as split, slugify as slug } from '$lib/utils/format';
 </script>
 
-<section id="projects" class="projects" bind:this={sectionRef}>
-	<div class="section-background">
-		<div class="bg-orb orb-left"></div>
-		<div class="bg-orb orb-right"></div>
+<section id="projects" class="projects">
+	<div class="projects__bg" aria-hidden="true">
+		<div class="projects__pool" use:parallax={{ speed: 0.3 }}></div>
 	</div>
-	
-	<div class="container">
-		<div class="section-header" class:visible={isVisible}>
-			<span class="section-tag">
-				<span class="tag-icon">🚀</span>
-				Proyectos Destacados
-			</span>
-			<h2 class="section-title">Trabajos Recientes</h2>
-			<p class="section-subtitle">Algunos de los proyectos que he desarrollado con pasión y dedicación</p>
-		</div>
-		
-		<div class="projects-grid">
-			{#each projects as project, index (project.id)}
-				<article 
-					class="project-card" 
-					class:visible={isVisible}
-					style="transition-delay: {index * 150}ms"
-				>
-					<div class="card-border"></div>
-					<div class="card-glow"></div>
-					
-					<div class="card-content">
-						<div class="project-header">
-							<div class="project-icon">
-								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
-							</div>
+
+	<div class="shell">
+		<header class="sec-head" use:reveal>
+			<div class="sec-head__line">
+				<h2>En <span class="accent">producción</span></h2>
+				<span class="meta sec-head__idx">// projects</span>
+			</div>
+			<p class="sec-head__lede">
+				Sistemas de negocio reales, construidos de principio a fin y corriendo
+				hoy. No prototipos — producto.
+			</p>
+		</header>
+
+		<div class="repos">
+			{#each projects as project, i (project.id)}
+				{@const p = split(project.title)}
+				<article class="repo" use:reveal>
+					<div class="repo__bar">
+						<span class="dots" aria-hidden="true">
+							<i style="--d:var(--mac-red)"></i>
+							<i style="--d:var(--mac-amber)"></i>
+							<i style="--d:var(--mac-green)"></i>
+						</span>
+						<span class="repo__path">kike/{slug(p.name)} — main</span>
+						<span class="repo__status"><span class="live"></span> producción</span>
+					</div>
+
+					<div class="repo__body">
+						<div class="repo__head">
+							<span class="meta repo__idx">[0{i + 1}]</span>
+							<h3>{p.name}</h3>
+							{#if p.sub}<p class="repo__sub">{p.sub}</p>{/if}
 						</div>
-						
-						<h3 class="project-title">{project.title}</h3>
-						<p class="project-description">{project.description}</p>
-						
-						<div class="tech-stack">
-							{#each project.technologies as tech, techIndex (tech)}
-								<span class="tech-tag" style="transition-delay: {index * 150 + techIndex * 50}ms">
-									{tech}
-								</span>
-							{/each}
+
+						<p class="repo__desc"><span class="repo__c">// </span>{project.description}</p>
+
+						<div class="repo__deps">
+							<span class="meta repo__deps-label">dependencies ({project.technologies.length})</span>
+							<ul>
+								{#each project.technologies as tech (tech)}
+									<li>{tech}</li>
+								{/each}
+							</ul>
 						</div>
 					</div>
 				</article>
@@ -76,238 +62,190 @@
 <style>
 	.projects {
 		position: relative;
-		padding: var(--spacing-3xl) var(--spacing-lg);
-		background: var(--color-bg-secondary);
+		padding-block: var(--space-3xl);
 		overflow: hidden;
 	}
-	
-	.section-background {
+	.projects__bg {
 		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+		inset: 0;
 		pointer-events: none;
-		overflow: hidden;
 	}
-	
-	.bg-orb {
+	.projects__pool {
 		position: absolute;
-		width: 500px;
-		height: 500px;
+		top: 10%;
+		left: -12rem;
+		width: 40rem;
+		height: 40rem;
 		border-radius: 50%;
-		filter: blur(150px);
-		opacity: 0.1;
+		background: radial-gradient(circle, rgba(0, 255, 136, 0.07), transparent 66%);
+		filter: blur(90px);
 	}
-	
-	.orb-left {
-		background: var(--color-accent-primary);
-		top: -200px;
-		left: -200px;
-		animation: float 10s ease-in-out infinite;
+
+	.sec-head {
+		margin-bottom: var(--space-2xl);
 	}
-	
-	.orb-right {
-		background: var(--color-accent-secondary);
-		bottom: -200px;
-		right: -200px;
-		animation: float 12s ease-in-out infinite reverse;
+	.sec-head__line {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+		border-bottom: 1px solid var(--hairline);
+		padding-bottom: 1.4rem;
 	}
-	
-	.container {
-		position: relative;
-		z-index: 1;
-		max-width: 1200px;
-		margin: 0 auto;
+	.sec-head h2 {
+		font-size: clamp(2.1rem, 5.2vw, 3.8rem);
+		letter-spacing: -0.035em;
 	}
-	
-	.section-header {
-		text-align: center;
-		margin-bottom: var(--spacing-2xl);
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base);
+	.accent {
+		color: var(--emerald-300);
 	}
-	
-	.section-header.visible {
-		opacity: 1;
-		transform: translateY(0);
+	.sec-head__idx {
+		padding-bottom: 0.6rem;
+		color: var(--ink-500);
 	}
-	
-	.section-tag {
+	.sec-head__lede {
+		margin-top: 1.4rem;
+		max-width: 52ch;
+		color: var(--ink-400);
+		font-size: 1.02rem;
+	}
+
+	.repos {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1.6rem, 3vw, 2.4rem);
+	}
+	.repo {
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		background: linear-gradient(180deg, rgba(18, 22, 25, 0.5), rgba(8, 10, 12, 0.62));
+		backdrop-filter: blur(10px);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		transition:
+			transform 0.4s var(--ease-out),
+			border-color 0.4s ease,
+			box-shadow 0.4s ease;
+	}
+	.repo:hover {
+		transform: translateY(-4px);
+		border-color: var(--emerald-700);
+		box-shadow: var(--shadow-lg), 0 0 50px -24px rgba(0, 255, 136, 0.5);
+	}
+	.repo__bar {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		padding: 0.7rem 1rem;
+		border-bottom: 1px solid var(--hairline);
+		background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent);
+	}
+	.dots {
+		display: inline-flex;
+		gap: 0.5rem;
+	}
+	.dots i {
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+		background: var(--d);
+	}
+	.repo__path {
+		flex: 1;
+		min-width: 0;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--ink-500);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.repo__status {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem 1.5rem;
-		background: rgba(0, 255, 136, 0.1);
-		border: 1px solid rgba(0, 255, 136, 0.3);
-		border-radius: var(--radius-full);
-		font-size: 0.875rem;
-		color: var(--color-accent-primary);
-		font-weight: 600;
-		margin-bottom: var(--spacing-md);
-		backdrop-filter: blur(10px);
+		gap: 0.45rem;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.04em;
+		color: var(--emerald-200);
 	}
-	
-	.tag-icon {
+	.live {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--emerald-300);
+		animation: pulse-dot 2.2s var(--ease-in-out) infinite;
+	}
+
+	.repo__body {
+		padding: clamp(1.4rem, 3vw, 2.2rem);
+	}
+	.repo__head {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+	}
+	.repo__idx {
+		color: var(--emerald-600);
+	}
+	.repo__head h3 {
+		font-size: clamp(1.4rem, 2.6vw, 2rem);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: var(--ink-100);
+	}
+	.repo__sub {
+		flex-basis: 100%;
+		color: var(--emerald-100);
+		font-weight: 500;
 		font-size: 1rem;
 	}
-	
-	.section-title {
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		font-weight: 800;
-		background: linear-gradient(135deg, #ffffff 0%, #00FF88 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin-bottom: var(--spacing-sm);
+	.repo__desc {
+		margin-top: 1.1rem;
+		max-width: 68ch;
+		color: var(--ink-300);
+		line-height: 1.75;
 	}
-	
-	.section-subtitle {
-		font-size: 1.125rem;
-		color: var(--color-text-secondary);
-		max-width: 500px;
-		margin: 0 auto;
+	.repo__c {
+		font-family: var(--font-mono);
+		color: var(--syn-comment);
 	}
-	
-	.projects-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-		gap: var(--spacing-xl);
+	.repo__deps {
+		margin-top: 1.6rem;
+		padding-top: 1.3rem;
+		border-top: 1px solid var(--hairline);
 	}
-	
-	.project-card {
-		position: relative;
-		background: var(--color-bg-primary);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-xl);
-		overflow: hidden;
-		opacity: 0;
-		transform: translateY(40px) scale(0.95);
-		transition: all 0.8s var(--transition-base);
+	.repo__deps-label {
+		display: block;
+		color: var(--ink-500);
+		margin-bottom: 0.8rem;
 	}
-	
-	.project-card.visible {
-		opacity: 1;
-		transform: translateY(0) scale(1);
-	}
-	
-	.card-border {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		border-radius: var(--radius-xl);
-		padding: 1px;
-		background: linear-gradient(135deg, transparent, rgba(0, 255, 136, 0.3), transparent);
-		-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-		mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-		-webkit-mask-composite: xor;
-		mask-composite: exclude;
-		opacity: 0;
-		transition: opacity var(--transition-fast);
-	}
-	
-	.project-card:hover .card-border {
-		opacity: 1;
-	}
-	
-	.card-glow {
-		position: absolute;
-		top: -50%;
-		left: -50%;
-		width: 200%;
-		height: 200%;
-		background: radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
-		opacity: 0;
-		transition: opacity var(--transition-fast);
-		pointer-events: none;
-	}
-	
-	.project-card:hover .card-glow {
-		opacity: 1;
-	}
-	
-	.card-content {
-		position: relative;
-		z-index: 1;
-		padding: var(--spacing-xl);
-	}
-	
-	.project-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: var(--spacing-md);
-	}
-	
-	.project-icon {
-		width: 50px;
-		height: 50px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 230, 118, 0.1) 100%);
-		border: 1px solid rgba(0, 255, 136, 0.3);
-		border-radius: var(--radius-lg);
-		color: var(--color-accent-primary);
-		transition: all var(--transition-fast);
-	}
-	
-	.project-card:hover .project-icon {
-		background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 100%);
-		color: var(--color-bg-primary);
-		box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-		transform: scale(1.1);
-	}
-	
-	.project-title {
-		font-size: 1.35rem;
-		font-weight: 700;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-sm);
-		transition: color var(--transition-fast);
-	}
-	
-	.project-card:hover .project-title {
-		color: var(--color-accent-primary);
-	}
-	
-	.project-description {
-		font-size: 0.95rem;
-		color: var(--color-text-secondary);
-		line-height: 1.7;
-		margin-bottom: var(--spacing-lg);
-	}
-	
-	.tech-stack {
+	.repo__deps ul {
+		list-style: none;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		margin-bottom: var(--spacing-lg);
 	}
-	
-	.tech-tag {
-		padding: 0.4rem 0.8rem;
-		background: var(--color-bg-tertiary);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-full);
-		color: var(--color-text-secondary);
-		font-size: 0.8rem;
-		font-weight: 500;
-		transition: all var(--transition-fast);
+	.repo__deps li {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--ink-300);
+		padding: 0.4rem 0.75rem;
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-sm);
+		background: rgba(255, 255, 255, 0.015);
+		transition:
+			color 0.25s ease,
+			border-color 0.25s ease,
+			background 0.25s ease,
+			transform 0.25s var(--ease-out);
 	}
-	
-	.tech-tag:hover {
-		border-color: var(--color-accent-primary);
-		color: var(--color-accent-primary);
-		background: rgba(0, 255, 136, 0.1);
-	}
-	
-	@media (max-width: 768px) {
-		.projects-grid {
-			grid-template-columns: 1fr;
-		}
+	.repo__deps li:hover {
+		color: var(--emerald-100);
+		border-color: var(--emerald-600);
+		background: rgba(0, 255, 136, 0.06);
+		transform: translateY(-2px);
 	}
 </style>

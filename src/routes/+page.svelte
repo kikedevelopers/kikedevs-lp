@@ -1,5 +1,16 @@
 <script lang="ts">
 	import '../lib/styles/global.css';
+	// Self-hosted faces (no external font host)
+	import '@fontsource/geist-sans/400.css';
+	import '@fontsource/geist-sans/500.css';
+	import '@fontsource/geist-sans/600.css';
+	import '@fontsource/geist-sans/700.css';
+	import '@fontsource/geist-mono/400.css';
+	import '@fontsource/geist-mono/500.css';
+
+	import { siteConfig } from '$lib/utils/constants';
+	import Particles from '$lib/components/Particles.svelte';
+	import CursorGlow from '$lib/components/CursorGlow.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Hero from '$lib/components/Hero.svelte';
 	import About from '$lib/components/About.svelte';
@@ -10,31 +21,29 @@
 </script>
 
 <svelte:head>
-	<title>Full Stack Developer | Portfolio</title>
-	<meta name="description" content="Desarrollador Full Stack especializado en crear experiencias web modernas y escalables" />
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<title>{siteConfig.title}</title>
+	<meta name="description" content={siteConfig.description} />
+	<meta name="theme-color" content="#050607" />
+	<meta property="og:title" content={siteConfig.title} />
+	<meta property="og:description" content={siteConfig.description} />
+	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div class="page">
-	<Header />
-	<main>
-		<Hero />
-		<About />
-		<Skills />
-		<Projects />
-		<Contact />
-	</main>
-	<Footer />
-</div>
+<Particles />
+<CursorGlow />
+<Header />
+<main>
+	<Hero />
+	<About />
+	<Skills />
+	<Projects />
+	<Contact />
+</main>
+<Footer />
 
 <style>
-	.page {
-		min-height: 100vh;
-	}
-	
 	main {
-		scroll-behavior: smooth;
+		position: relative;
+		z-index: 2;
 	}
 </style>

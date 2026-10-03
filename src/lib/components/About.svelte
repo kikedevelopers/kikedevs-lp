@@ -1,85 +1,72 @@
 <script lang="ts">
 	import { aboutData } from '$lib/utils/constants';
-	import { onMount } from 'svelte';
-	
-	let isVisible = $state(false);
-	let sectionRef: HTMLElement;
-	
-	onMount(() => {
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					isVisible = true;
-				}
-			},
-			{ threshold: 0.2 }
-		);
-		
-		if (sectionRef) {
-			observer.observe(sectionRef);
-		}
-		
-		return () => observer.disconnect();
-	});
+	import { reveal, parallax, countUp } from '$lib/actions/motion';
+	import { parseStat } from '$lib/utils/format';
+
+	const icons: Record<string, string> = {
+		code: 'M8 6 2 12l6 6M16 6l6 6-6 6M13 4l-2 16',
+		server:
+			'M5 4h14a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1ZM5 14h14a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1ZM8 7h.01M8 17h.01',
+		check: 'M12 3 4 6v5c0 4.5 3.3 8.3 8 9.5 4.7-1.2 8-5 8-9.5V6l-8-3ZM9 12l2 2 4-4'
+	};
+	const keys = ['frontend', 'backend', 'quality'];
 </script>
 
-<section id="about" class="about" bind:this={sectionRef}>
-	<div class="section-background">
-		<div class="grid-pattern"></div>
+<section id="about" class="about">
+	<div class="about__bg" aria-hidden="true">
+		<div class="about__beam" use:parallax={{ speed: 0.16 }}></div>
 	</div>
-	
-	<div class="container">
-		<div class="section-header" class:visible={isVisible}>
-			<span class="section-tag">
-				<span class="tag-line"></span>
-				Sobre Mí
-				<span class="tag-line"></span>
-			</span>
-			<h2 class="section-title">Conoce mi historia</h2>
-		</div>
-		
-		<div class="about-content">
-			<div class="about-text" class:visible={isVisible}>
-				<p class="about-lead">
-					{aboutData.description}
-				</p>
-				
-				<div class="highlights-grid">
-					{#each aboutData.highlights as highlight, index (highlight.title)}
-						<div 
-							class="highlight-card" 
-							class:visible={isVisible}
-							style="transition-delay: {index * 100 + 300}ms"
-						>
-							<div class="card-glow"></div>
-							<div class="highlight-icon">
-								{#if highlight.icon === 'code'}
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-								{:else if highlight.icon === 'server'}
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
-								{:else}
-									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
-								{/if}
-							</div>
-							<h3 class="highlight-title">{highlight.title}</h3>
-							<p class="highlight-description">{highlight.description}</p>
-						</div>
-					{/each}
-				</div>
+
+	<div class="shell">
+		<header class="sec-head" use:reveal>
+			<div class="sec-head__line">
+				<h2>Ingeniería, no<br /><span class="accent">improvisación</span></h2>
+				<span class="meta sec-head__idx">// sobre-mí</span>
 			</div>
-			
-			<div class="stats-row" class:visible={isVisible}>
-				{#each aboutData.stats as stat, index (stat.label)}
-					<div
-						class="stat-item"
-						class:visible={isVisible}
-						style="transition-delay: {index * 100 + 600}ms"
-					>
-						<span class="stat-value">{stat.value}</span>
-						<span class="stat-label">{stat.label}</span>
+		</header>
+
+		<div class="about__grid">
+			<div class="about__lede" use:reveal>
+				<blockquote class="credo">
+					<span class="credo__m">/*</span>
+					{aboutData.quote.replace(/"/g, '')}
+					<span class="credo__m">*/</span>
+				</blockquote>
+				<p>{aboutData.description}</p>
+			</div>
+
+			<ol class="caps" use:reveal={{ stagger: true }}>
+				{#each aboutData.highlights as h, i (h.title)}
+					<li class="cap">
+						<span class="cap__key">{keys[i] ?? 'module'}</span>
+						<span class="cap__icon">
+							<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d={icons[h.icon]} />
+							</svg>
+						</span>
+						<div class="cap__body">
+							<h3>{h.title}</h3>
+							<p>{h.description}</p>
+						</div>
+					</li>
+				{/each}
+			</ol>
+		</div>
+
+		<div class="metrics" use:reveal>
+			<p class="metrics__cmd meta"><span class="metrics__prompt">$</span> stats --summary</p>
+			<dl class="metrics__list">
+				{#each aboutData.stats as stat (stat.label)}
+					{@const s = parseStat(stat.value)}
+					<div class="metric">
+						<span class="metric__arrow" aria-hidden="true">→</span>
+						<dt class="metric__value" use:countUp={{ to: s.n, suffix: s.suffix }}>
+							{stat.value}
+						</dt>
+						<dd class="metric__label">{stat.label}</dd>
 					</div>
 				{/each}
-			</div>
+			</dl>
 		</div>
 	</div>
 </section>
@@ -87,273 +74,200 @@
 <style>
 	.about {
 		position: relative;
-		padding: var(--spacing-3xl) var(--spacing-lg);
-		background: var(--color-bg-secondary);
+		padding-block: var(--space-3xl);
 		overflow: hidden;
 	}
-	
-	.section-background {
+	.about__bg {
 		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+		inset: 0;
 		pointer-events: none;
 	}
-	
-	.grid-pattern {
+	.about__beam {
 		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-image: 
-			linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
-		background-size: 60px 60px;
+		top: -16%;
+		left: 6%;
+		width: 48rem;
+		height: 48rem;
+		background: radial-gradient(circle, rgba(0, 255, 136, 0.05), transparent 62%);
+		filter: blur(40px);
 	}
-	
-	.container {
-		position: relative;
-		z-index: 1;
-		max-width: 1200px;
-		margin: 0 auto;
+
+	.sec-head {
+		margin-bottom: var(--space-2xl);
 	}
-	
-	.section-header {
-		text-align: center;
-		margin-bottom: var(--spacing-2xl);
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base);
+	.sec-head__line {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+		border-bottom: 1px solid var(--hairline);
+		padding-bottom: 1.4rem;
 	}
-	
-	.section-header.visible {
-		opacity: 1;
-		transform: translateY(0);
+	.sec-head h2 {
+		font-size: clamp(2.1rem, 5.2vw, 3.8rem);
+		letter-spacing: -0.035em;
 	}
-	
-	.section-tag {
-		display: inline-flex;
-		align-items: center;
-		gap: 1rem;
-		font-size: 0.875rem;
-		color: var(--color-accent-primary);
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		margin-bottom: var(--spacing-md);
+	.accent {
+		color: var(--emerald-300);
 	}
-	
-	.tag-line {
-		display: block;
-		width: 40px;
-		height: 1px;
-		background: linear-gradient(90deg, transparent, var(--color-accent-primary));
+	.sec-head__idx {
+		padding-bottom: 0.6rem;
+		color: var(--ink-500);
 	}
-	
-	.tag-line:last-child {
-		background: linear-gradient(90deg, var(--color-accent-primary), transparent);
+
+	.about__grid {
+		display: grid;
+		grid-template-columns: 0.92fr 1.08fr;
+		gap: clamp(2rem, 6vw, 5rem);
+		align-items: start;
 	}
-	
-	.section-title {
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		font-weight: 800;
-		background: linear-gradient(135deg, #ffffff 0%, #00FF88 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
+	.credo {
+		font-family: var(--font-mono);
+		font-size: clamp(1.1rem, 2vw, 1.5rem);
+		line-height: 1.5;
+		color: var(--ink-100);
+		margin-bottom: 1.6rem;
+		padding-left: 1.4rem;
+		border-left: 1px solid var(--emerald-700);
 	}
-	
-	.about-content {
+	.credo__m {
+		color: var(--syn-comment);
+	}
+	.about__lede p {
+		color: var(--ink-300);
+		font-size: 1.05rem;
+		line-height: 1.8;
+		max-width: 46ch;
+	}
+
+	/* capabilities as a module list, not uniform cards */
+	.caps {
+		list-style: none;
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-2xl);
 	}
-	
-	.about-text {
-		text-align: center;
-		max-width: 800px;
-		margin: 0 auto;
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base) 0.2s;
-	}
-	
-	.about-text.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	
-	.about-lead {
-		font-size: 1.35rem;
-		font-weight: 500;
-		color: var(--color-text-primary);
-		line-height: 1.8;
-		margin-bottom: var(--spacing-2xl);
-	}
-	
-	.highlights-grid {
+	.cap {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: var(--spacing-lg);
-		margin-bottom: var(--spacing-2xl);
+		grid-template-columns: auto auto 1fr;
+		align-items: start;
+		gap: 1.3rem;
+		padding-block: 1.6rem;
+		border-top: 1px solid var(--hairline);
+		transition: transform 0.4s var(--ease-out);
 	}
-	
-	.highlight-card {
-		position: relative;
-		padding: var(--spacing-xl);
-		background: var(--color-bg-primary);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-xl);
-		text-align: left;
-		transition: all var(--transition-fast);
-		opacity: 0;
-		transform: translateY(30px);
-		overflow: hidden;
+	.cap:last-child {
+		border-bottom: 1px solid var(--hairline);
 	}
-	
-	.highlight-card.visible {
-		opacity: 1;
-		transform: translateY(0);
+	.cap:hover {
+		transform: translateX(8px);
 	}
-	
-	.highlight-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 1px;
-		background: linear-gradient(90deg, transparent, var(--color-accent-primary), transparent);
-		opacity: 0;
-		transition: opacity var(--transition-fast);
+	.cap__key {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--emerald-600);
+		padding-top: 0.5rem;
 	}
-	
-	.card-glow {
-		position: absolute;
-		top: -50%;
-		left: -50%;
-		width: 200%;
-		height: 200%;
-		background: radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
-		opacity: 0;
-		transition: opacity var(--transition-fast);
-		pointer-events: none;
+	.cap__icon {
+		display: grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		color: var(--emerald-200);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-sm);
+		background: linear-gradient(145deg, rgba(0, 255, 136, 0.07), transparent);
+		transition:
+			color 0.3s ease,
+			border-color 0.3s ease,
+			box-shadow 0.3s ease,
+			background 0.3s ease;
 	}
-	
-	.highlight-card:hover {
-		border-color: var(--color-accent-primary);
-		transform: translateY(-8px);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 255, 136, 0.1);
+	.cap:hover .cap__icon {
+		color: var(--onyx-900);
+		background: linear-gradient(145deg, #8bffc4, #00c853);
+		border-color: transparent;
+		box-shadow: 0 0 24px rgba(0, 255, 136, 0.4);
 	}
-	
-	.highlight-card:hover::before {
-		opacity: 1;
+	.cap__body h3 {
+		font-size: 1.12rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--ink-100);
+		margin-bottom: 0.4rem;
 	}
-	
-	.highlight-card:hover .card-glow {
-		opacity: 1;
-	}
-	
-	.highlight-icon {
-		width: 56px;
-		height: 56px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 230, 118, 0.1) 100%);
-		border: 1px solid rgba(0, 255, 136, 0.3);
-		border-radius: var(--radius-lg);
-		color: var(--color-accent-primary);
-		margin-bottom: var(--spacing-md);
-		transition: all var(--transition-fast);
-	}
-	
-	.highlight-card:hover .highlight-icon {
-		background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 100%);
-		color: var(--color-bg-primary);
-		box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-	}
-	
-	.highlight-title {
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-sm);
-	}
-	
-	.highlight-description {
-		font-size: 0.95rem;
-		color: var(--color-text-secondary);
-		line-height: 1.7;
-	}
-	
-	.stats-row {
-		display: flex;
-		justify-content: center;
-		gap: var(--spacing-2xl);
-		flex-wrap: wrap;
-		padding-top: var(--spacing-xl);
-		border-top: 1px solid var(--color-border);
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base) 0.6s;
-	}
-	
-	.stats-row.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	
-	.stat-item {
-		text-align: center;
-		padding: var(--spacing-md);
-		opacity: 0;
-		transform: translateY(20px);
-		transition: all 0.6s var(--transition-base);
+	.cap__body p {
+		color: var(--ink-400);
+		font-size: 0.96rem;
+		line-height: 1.65;
+		max-width: 44ch;
 	}
 
-	.stat-item.visible {
-		opacity: 1;
-		transform: translateY(0);
+	/* metrics as a terminal readout, not a 4-cell hero-metric template */
+	.metrics {
+		margin-top: var(--space-2xl);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+		background: linear-gradient(180deg, rgba(18, 22, 25, 0.5), rgba(8, 10, 12, 0.6));
+		backdrop-filter: blur(8px);
+		padding: clamp(1.3rem, 3vw, 2rem);
+	}
+	.metrics__cmd {
+		padding-bottom: 1.1rem;
+		margin-bottom: 1.3rem;
+		border-bottom: 1px solid var(--hairline);
+		color: var(--ink-400);
+	}
+	.metrics__prompt {
+		color: var(--emerald-300);
+		margin-right: 0.3rem;
+	}
+	.metrics__list {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1.3rem 2.5rem;
+	}
+	.metric {
+		display: flex;
+		align-items: baseline;
+		gap: 0.7rem;
+	}
+	.metric__arrow {
+		font-family: var(--font-mono);
+		color: var(--syn-fn);
+	}
+	.metric__value {
+		font-family: var(--font-display);
+		font-size: clamp(1.7rem, 3vw, 2.3rem);
+		font-weight: 600;
+		letter-spacing: -0.04em;
+		color: var(--emerald-200);
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+	.metric__label {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--ink-400);
 	}
 
-	.stat-value {
-		display: block;
-		font-size: 3rem;
-		font-weight: 800;
-		background: linear-gradient(135deg, #00FF88 0%, #00E676 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin-bottom: 0.5rem;
+	@media (max-width: 860px) {
+		.about__grid {
+			grid-template-columns: 1fr;
+			gap: 2.5rem;
+		}
 	}
-	
-	.stat-label {
-		font-size: 0.875rem;
-		color: var(--color-text-secondary);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-	
-	@media (max-width: 768px) {
-		.highlights-grid {
+	@media (max-width: 520px) {
+		.metrics__list {
 			grid-template-columns: 1fr;
 		}
-		
-		.stats-row {
-			display: grid;
-			grid-template-columns: repeat(2, 1fr);
-			gap: var(--spacing-md);
+	}
+	@media (max-width: 460px) {
+		.cap {
+			grid-template-columns: auto 1fr;
 		}
-
-		.stat-item {
-			padding: var(--spacing-sm);
-		}
-		
-		.stat-value {
-			font-size: 2.25rem;
+		.cap__key {
+			display: none;
 		}
 	}
 </style>

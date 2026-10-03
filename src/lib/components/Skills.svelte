@@ -1,94 +1,75 @@
 <script lang="ts">
 	import { skills } from '$lib/utils/constants';
-	import { onMount } from 'svelte';
-	
-	let isVisible = $state(false);
-	let animatedLevels = $state<Record<string, number>>({});
-	let sectionRef: HTMLElement;
-	
-	const categories = [...new Set(skills.map(s => s.category))];
-	
-	onMount(() => {
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					isVisible = true;
-					// Animate skill levels
-					skills.forEach((skill, index) => {
-						setTimeout(() => {
-							animatedLevels[skill.name] = skill.level;
-						}, index * 100);
-					});
-				}
-			},
-			{ threshold: 0.2 }
-		);
-		
-		if (sectionRef) {
-			observer.observe(sectionRef);
-		}
-		
-		return () => observer.disconnect();
-	});
-	
-	function getCategoryIcon(category: string) {
-		switch(category) {
-			case 'Frontend': return '💻';
-			case 'Backend': return '⚙️';
-			case 'Database': return '🗄️';
-			case 'DevOps': return '🚀';
-			case 'Quality': return '✨';
-			case 'AI': return '🤖';
-			default: return '📦';
-		}
-	}
+	import { reveal, parallax } from '$lib/actions/motion';
+
+	const categories = [...new Set(skills.map((s) => s.category))];
+	const byCat = (c: string) => skills.filter((s) => s.category === c);
+
+	const labelEs: Record<string, string> = {
+		Frontend: 'Frontend',
+		Backend: 'Backend',
+		Database: 'Bases de datos',
+		DevOps: 'DevOps',
+		Quality: 'Calidad',
+		AI: 'IA'
+	};
+
+	const catIcon: Record<string, string> = {
+		Frontend: 'M3 5h18v11H3zM3 19h18M9 9l-2 2 2 2M15 9l2 2-2 2',
+		Backend: 'M4 5h16v4H4zM4 15h16v4H4zM7 7h.01M7 17h.01M11 7h6M11 17h6',
+		Database:
+			'M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3ZM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+		DevOps:
+			'M4.5 16.5 3 21l4.5-1.5M14 6s2.5-3 6-3c0 3.5-3 6-3 6M14 6l-4 1-3 3 4 1 1 4 3-3 1-4M14 6l-4 7M9 13l2 2',
+		Quality: 'M12 2 9 9l-7 3 7 3 3 7 3-7 7-3-7-3-3-7ZM5 4v3M19 17v3M4 5h2M18 18h2',
+		AI: 'M9 3h6v3M9 21h6v-3M3 9h3v6H3M18 9h3v6h-3M8 8h8v8H8zM11 11h2v2h-2z'
+	};
 </script>
 
-<section id="skills" class="skills" bind:this={sectionRef}>
-	<div class="section-glow"></div>
-	
-	<div class="container">
-		<div class="section-header" class:visible={isVisible}>
-			<span class="section-tag">Habilidades</span>
-			<h2 class="section-title">Stack Tecnológico</h2>
-			<p class="section-subtitle">Tecnologías que domino y uso para crear soluciones escalables</p>
-		</div>
-		
-		<div class="skills-grid">
-			{#each categories as category, catIndex (category)}
-				<div 
-					class="skill-category" 
-					class:visible={isVisible}
-					style="transition-delay: {catIndex * 150}ms"
-				>
-					<div class="category-header">
-						<span class="category-icon">{getCategoryIcon(category)}</span>
-						<h3 class="category-title">{category}</h3>
-						<div class="category-line"></div>
+<section id="skills" class="skills">
+	<div class="skills__bg" aria-hidden="true">
+		<div class="skills__halo" use:parallax={{ speed: 0.2 }}></div>
+	</div>
+
+	<div class="shell">
+		<header class="sec-head" use:reveal>
+			<div class="sec-head__line">
+				<h2>El <span class="accent">stack</span></h2>
+				<span class="meta sec-head__idx">// dependencies</span>
+			</div>
+			<p class="sec-head__lede">
+				Tecnologías que uso a diario para enviar producto. Cada una calibrada por
+				años en producción, no por tutoriales.
+			</p>
+		</header>
+
+		<div class="spectrum">
+			{#each categories as cat (cat)}
+				<article class="row" use:reveal>
+					<div class="row__head">
+						<span class="row__icon">
+							<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d={catIcon[cat]} />
+							</svg>
+						</span>
+						<h3>{labelEs[cat] ?? cat}</h3>
+						<span class="meta row__count">{byCat(cat).length} pkg</span>
 					</div>
-					
-					<div class="category-skills">
-						{#each skills.filter(s => s.category === category) as skill, skillIndex (skill.name)}
-							<div class="skill-item" style="transition-delay: {catIndex * 150 + skillIndex * 50}ms">
-								<div class="skill-info">
-									<div class="skill-name-wrapper">
-										<span class="skill-dot"></span>
-										<span class="skill-name">{skill.name}</span>
-									</div>
-									<span class="skill-percentage">{animatedLevels[skill.name] || 0}%</span>
+
+					<div class="row__skills" use:reveal={{ stagger: true }}>
+						{#each byCat(cat) as skill (skill.name)}
+							<div class="gauge" style="--lvl:{skill.level}%; --ratio:{skill.level / 100}">
+								<div class="gauge__meta">
+									<span class="gauge__name">{skill.name}</span>
+									<span class="gauge__pct">{skill.level}</span>
 								</div>
-								<div class="skill-bar">
-									<div 
-										class="skill-progress" 
-										style="width: {animatedLevels[skill.name] || 0}%"
-									>
-										<div class="progress-glow"></div>
-									</div>
+								<div class="gauge__track">
+									<div class="gauge__fill"></div>
 								</div>
 							</div>
 						{/each}
 					</div>
-				</div>
+				</article>
 			{/each}
 		</div>
 	</div>
@@ -97,220 +78,162 @@
 <style>
 	.skills {
 		position: relative;
-		padding: var(--spacing-3xl) var(--spacing-lg);
-		background: var(--color-bg-primary);
+		padding-block: var(--space-3xl);
 		overflow: hidden;
 	}
-	
-	.section-glow {
+	.skills__bg {
 		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: 800px;
-		height: 800px;
-		background: radial-gradient(circle, rgba(0, 255, 136, 0.05) 0%, transparent 70%);
+		inset: 0;
 		pointer-events: none;
 	}
-	
-	.container {
-		position: relative;
-		z-index: 1;
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-	
-	.section-header {
-		text-align: center;
-		margin-bottom: var(--spacing-2xl);
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base);
-	}
-	
-	.section-header.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	
-	.section-tag {
-		display: inline-block;
-		padding: 0.5rem 1.5rem;
-		background: rgba(0, 255, 136, 0.1);
-		border: 1px solid rgba(0, 255, 136, 0.3);
-		border-radius: var(--radius-full);
-		font-size: 0.875rem;
-		color: var(--color-accent-primary);
-		font-weight: 600;
-		margin-bottom: var(--spacing-md);
-		backdrop-filter: blur(10px);
-	}
-	
-	.section-title {
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		font-weight: 800;
-		background: linear-gradient(135deg, #ffffff 0%, #00FF88 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		margin-bottom: var(--spacing-sm);
-	}
-	
-	.section-subtitle {
-		font-size: 1.125rem;
-		color: var(--color-text-secondary);
-		max-width: 500px;
-		margin: 0 auto;
-	}
-	
-	.skills-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: var(--spacing-xl);
-	}
-	
-	.skill-category {
-		position: relative;
-		background: var(--color-bg-secondary);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-xl);
-		padding: var(--spacing-xl);
-		opacity: 0;
-		transform: translateY(30px);
-		transition: all 0.8s var(--transition-base);
-		overflow: hidden;
-	}
-	
-	.skill-category.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-	
-	.skill-category::before {
-		content: '';
+	.skills__halo {
 		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 2px;
-		background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
-		transform: scaleX(0);
-		transition: transform var(--transition-slow);
+		top: 28%;
+		right: -10%;
+		width: 42rem;
+		height: 42rem;
+		background: radial-gradient(circle, rgba(0, 200, 83, 0.06), transparent 62%);
+		filter: blur(40px);
 	}
-	
-	.skill-category:hover::before {
-		transform: scaleX(1);
+
+	.sec-head {
+		margin-bottom: var(--space-2xl);
 	}
-	
-	.skill-category:hover {
-		border-color: rgba(0, 255, 136, 0.3);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 255, 136, 0.05);
-	}
-	
-	.category-header {
+	.sec-head__line {
 		display: flex;
-		align-items: center;
-		gap: var(--spacing-sm);
-		margin-bottom: var(--spacing-lg);
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+		border-bottom: 1px solid var(--hairline);
+		padding-bottom: 1.4rem;
 	}
-	
-	.category-icon {
-		font-size: 1.5rem;
+	.sec-head h2 {
+		font-size: clamp(2.1rem, 5.2vw, 3.8rem);
+		letter-spacing: -0.035em;
 	}
-	
-	.category-title {
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: var(--color-text-primary);
+	.accent {
+		color: var(--emerald-300);
 	}
-	
-	.category-line {
-		flex: 1;
-		height: 1px;
-		background: linear-gradient(90deg, var(--color-border), transparent);
-		margin-left: var(--spacing-sm);
+	.sec-head__idx {
+		padding-bottom: 0.6rem;
+		color: var(--ink-500);
 	}
-	
-	.category-skills {
+	.sec-head__lede {
+		margin-top: 1.4rem;
+		max-width: 52ch;
+		color: var(--ink-400);
+		font-size: 1.02rem;
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: 0.42fr 1fr;
+		gap: clamp(1.5rem, 4vw, 4rem);
+		padding-block: 2.3rem;
+		border-top: 1px solid var(--hairline);
+	}
+	.row:last-child {
+		border-bottom: 1px solid var(--hairline);
+	}
+	.row__head {
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-md);
+		align-items: flex-start;
+		gap: 0.9rem;
+		position: sticky;
+		top: 6rem;
+		height: fit-content;
 	}
-	
-	.skill-item {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
+	.row__icon {
+		display: grid;
+		place-items: center;
+		width: 52px;
+		height: 52px;
+		color: var(--emerald-200);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+		background: linear-gradient(145deg, rgba(0, 255, 136, 0.06), transparent);
 	}
-	
-	.skill-info {
+	.row__head h3 {
+		font-size: 1.4rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: var(--ink-100);
+	}
+	.row__count {
+		color: var(--emerald-600);
+	}
+
+	.row__skills {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+		gap: 1.4rem 2.5rem;
+	}
+	.gauge__meta {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: baseline;
+		margin-bottom: 0.55rem;
 	}
-	
-	.skill-name-wrapper {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
+	.gauge__name {
+		font-size: 0.92rem;
+		font-weight: 500;
+		color: var(--ink-200);
 	}
-	
-	.skill-dot {
-		width: 6px;
-		height: 6px;
-		background: var(--color-accent-primary);
-		border-radius: 50%;
-		box-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
-	}
-	
-	.skill-name {
-		font-weight: 600;
-		color: var(--color-text-primary);
-		font-size: 0.95rem;
-	}
-	
-	.skill-percentage {
-		font-size: 0.875rem;
-		color: var(--color-accent-primary);
+	.gauge__pct {
 		font-family: var(--font-mono);
-		font-weight: 600;
+		font-size: 0.74rem;
+		color: var(--emerald-300);
+		font-variant-numeric: tabular-nums;
 	}
-	
-	.skill-bar {
-		height: 6px;
-		background: var(--color-bg-tertiary);
-		border-radius: var(--radius-full);
-		overflow: hidden;
-		position: relative;
+	.gauge__pct::after {
+		content: '%';
+		color: var(--ink-600);
+		margin-left: 1px;
 	}
-	
-	.skill-progress {
-		height: 100%;
-		background: linear-gradient(90deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 100%);
-		border-radius: var(--radius-full);
-		transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+	.gauge__track {
 		position: relative;
+		height: 3px;
+		background: var(--onyx-600);
+		border-radius: 999px;
 		overflow: hidden;
 	}
-	
-	.progress-glow {
+	.gauge__fill {
 		position: absolute;
-		top: 0;
-		right: 0;
-		width: 30px;
-		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-		animation: shimmer 2s infinite;
+		inset: 0;
+		width: 100%;
+		background: linear-gradient(90deg, var(--emerald-700), var(--emerald-300));
+		border-radius: 999px;
+		box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 1.3s var(--ease-out);
+		transition-delay: calc(var(--reveal-i, 0) * 55ms);
 	}
-	
-	@keyframes shimmer {
-		0% { transform: translateX(-30px); }
-		100% { transform: translateX(30px); }
+	.row__skills[data-revealed] .gauge__fill {
+		transform: scaleX(var(--ratio));
 	}
-	
-	@media (max-width: 768px) {
-		.skills-grid {
+
+	@media (max-width: 860px) {
+		.row {
 			grid-template-columns: 1fr;
+			gap: 1.6rem;
+		}
+		.row__head {
+			position: static;
+			flex-direction: row;
+			align-items: center;
+			gap: 1rem;
+		}
+		.row__count {
+			margin-left: auto;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.gauge__fill {
+			transition: none;
+			transform: scaleX(var(--ratio));
 		}
 	}
 </style>
